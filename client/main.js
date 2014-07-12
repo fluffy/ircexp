@@ -16,6 +16,7 @@ Fluffy.Edit = (function () {
     var docRidStart;
     var docRidEnd;
 
+
     /* functions used to add things to the DOM */
 
     function viewNewPara( elem ) {
@@ -60,6 +61,7 @@ Fluffy.Edit = (function () {
 	    });
 	}
     }
+
 
     function viewNewFrag( elem ) {
 	//console.log( "In viewNewFrag" );
@@ -118,10 +120,38 @@ Fluffy.Edit = (function () {
 
     /* functions used by local UI to do UI actions and update DOM & Server */
 
+
     function modelSendUpdate( elem ) {
+	$.post( "/v1/update" , elem ).done( function () {
+	    console.log( "update to db is done" );
+	}).fail( function ( jqXHR, status) {
+	    console.log( "update to db failed: " + status + jqXHR.url  );
+	}); 
     }
 
     function modelLoad() {
+	$.ajax({
+            url: "/v1/rids"
+	}).done( function (data) {
+            var i,elements,element;
+	    
+            elements = JSON.parse( data );
+            for ( i in elements ) {
+		if ( elements.hasOwnProperty(i)) {
+		    element = elements[i];
+		    
+		    if ( element.type === 'frag' ) {
+			viewNewFrag( element ); 
+		    } else if ( element.type === 'para' ) {
+			viewNewPara( element ); 
+		    } else {
+			console.log( "Unknown type in load" );
+		    }
+		}
+            }
+	}).fail( function (jqXHR,status) {
+            console.log( "fetch of document from db failed: " + status + jqXHR.url );
+	});
     }
 
     function modelNewFrag( prevRid, text , content ) {
@@ -141,6 +171,18 @@ Fluffy.Edit = (function () {
 
 	elem.text = text;
 	elem.content = content;
+
+	elem.saved = false;
+	localStorage.setItem( elem.rid, JSON.stringify( elem ) );
+
+	/* 
+	   var junk =  localStorage.getItem( elem.rid );
+	   for (var x in localStorage) { 
+           if ( x.substring(0, 3) == "rid") {
+           console.log( x );
+           }
+	   }
+	*/
 
 	viewNewFrag( elem );
 
@@ -177,6 +219,7 @@ Fluffy.Edit = (function () {
 	return elem;
     }
 
+
     function modelKillElement( rid ) {
 	console.log( "In modelKillElement" );
 
@@ -192,6 +235,7 @@ Fluffy.Edit = (function () {
 
 	return elem;
     }
+
 
     /* cursor managment code ************************************************/ 
 
@@ -441,6 +485,7 @@ Fluffy.Edit = (function () {
 
     return publicExport;
 }());   
+
 
 $(document).ready(function(){
     "use strict";

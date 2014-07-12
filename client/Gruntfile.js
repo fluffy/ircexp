@@ -38,7 +38,7 @@ module.exports = function(grunt) {
 		    compress: false
 		},
 		files: {
-		    'main.gen.css': 'main.styl'
+		    'main.gen.css': 'main.styl', 
 		}
 	    }
 	},
