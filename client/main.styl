@@ -1,5 +1,6 @@
 
 toolbar-heigth = 40px // 32 
+footer-heigth = 50px
 base-font-size = 11pt 
 
 div#outer 
@@ -12,6 +13,7 @@ div#inner
     background: #fff
     overflow: hidden
     margin-top: toolbar-heigth
+    margin-bottom: footer-heigth
     height: 100%
 
 
@@ -24,6 +26,25 @@ div#toolbar
     top 0px /* stick to top */
 
 
+div#footer 
+    background #ddd
+    height  footer-heigth
+    
+    position fixed
+    width 100%
+    bottom 0px
+
+input#text-compose
+   float left 
+   position absolute
+   right 30px
+   width 90%
+   margin 5px
+
+a#compose-btn
+   width 40px
+   heigth 40px
+   float right
 
 div#cur 
     position  fixed

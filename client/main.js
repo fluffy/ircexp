@@ -569,6 +569,10 @@ Fluffy.Edit = (function () {
     $(document).keypress( function(e) {
 	var para, frag;
 
+	if ( $("input#text-compose").is(":focus") ) {
+            return;
+	}
+
 	//console.log( "event press charCode " + JSON.stringify( e.charCode ) );
 	//console.log( "event press keyCode " + JSON.stringify( e.keyCode ) );
 	if ( e.keyCode  === 13 ) { // return key pressed
@@ -583,6 +587,11 @@ Fluffy.Edit = (function () {
     });
 
     $(document).keydown( function(e) {
+
+	if ( $("input#text-compose").is(":focus") ) {
+            return;
+	}
+
 	//console.log( "event down " + JSON.stringify( e.keyCode ) );
 	if ( e.keyCode === 8 ) { // delete
             e.preventDefault(); // for the record, backspace to navigate is insane 
@@ -600,6 +609,45 @@ Fluffy.Edit = (function () {
 	}
     });
 
+    /********* Compose footer **************/
+
+    $( "#compose-btn" ).click(function() {
+	var text, frag, para, c, rid;
+
+	console.log( "compose button click" );
+	
+	text = $( "#text-compose" ).val();
+	
+	console.log( "compose text = " + text);
+
+	// find the end of the document 
+	cursorEnd();
+	rid =  cursorGetRid() ;
+
+	// insert a new note paragraph
+	para = modelNewPara( rid );
+	rid = para.rid;
+	modelChangeParaStyle( rid , "para-Note" );
+
+	// add the text 
+	for ( c in text ) 
+	{
+	    if ( text.hasOwnProperty(c) ) {
+		frag = modelNewFrag( rid ,  text[c]  );
+		rid = frag.rid;
+	    }
+	}
+
+	// move cursor to end of new text 
+	cursorUpdate( rid );
+
+	// scroll window to end
+	// todo 
+
+	// emtpyt out the text box
+	$( "#text-compose" ).val('');
+	$( "#text-compose" ).focus();
+    });
 
     /************* Track Time *****************/
 
@@ -708,6 +756,8 @@ Fluffy.Edit = (function () {
 	cursonInit( docRidStart );
 	
 	updateTrackTime();
+	
+	$( "#text-compose" ).focus();
 	
 	webSocketInit();
 	
