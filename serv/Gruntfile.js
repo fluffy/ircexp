@@ -167,7 +167,7 @@ module.exports = function(grunt) {
             dev: ["static-dev"],
             prod: ["static"]
         }
-      
+       
     });
 
     grunt.loadNpmTasks('grunt-contrib-jade');

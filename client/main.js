@@ -1,5 +1,5 @@
 /*jslint  browser: true, devel: true,  vars: true, todo: true, white: true, bitwise: true */
-/*global  $ */
+/*global  $,WebSocket */
 /* jshint strict: true, jquery: true */
 
 var Fluffy;
@@ -15,6 +15,7 @@ Fluffy.Edit = (function () {
     var docName;
     var docRidStart;
     var docRidEnd;
+    var webSocketConnection = null; // websocket connection to server 
 
 
     /* functions used to add things to the DOM */
@@ -176,6 +177,7 @@ Fluffy.Edit = (function () {
 	}).fail( function ( jqXHR, status) {
 	    console.log( "update to db failed: " + status + jqXHR.url  );
 	}); 
+	//connection.send( JSON.stringify( elem ) );
     }
 
     function modelLoad() {
@@ -597,10 +599,69 @@ Fluffy.Edit = (function () {
 	}
     });
 
+
     /************* Track Time *****************/
 
      function updateTrackTime() {
 	var cacheTime = 1;
+    }
+
+
+
+    /* WebSocekt Communication stuff *******************/
+
+    function webSocketInit() {
+	var pageURL, wsURL;
+
+	// TODO if ( ('WebSocket' in window) === false) {
+    	//    console.log( "Websocket not supported in this browser");
+	//}
+	
+	pageURL = window.location;
+	wsURL = ((pageURL.protocol === "https:") ? "wss://" : "ws://");
+	wsURL += pageURL.hostname ;
+	wsURL += (((pageURL.port !== 80) && (pageURL.port !== 443)) ? ":" + pageURL.port : ""); // todo - sort of a bug 
+	wsURL += '/web-socket/' ;
+	
+
+	webSocketConnection = new WebSocket( wsURL );
+	
+	webSocketConnection.onopen = function(){
+            console.log('WebSocket Connection open!');
+	};
+	
+	webSocketConnection.onclose = function(){
+            console.log('WebSocket Connection closed');
+	};
+	
+	webSocketConnection.onerror = function(error){
+            console.log('WebSocket Error detected: ' + error);
+	};
+	
+	webSocketConnection.onmessage = function(e){
+	    var msg;
+
+            msg = JSON.parse( e.data );
+	    if (  typeof( msg.dead ) === 'string' ) {
+		msg.dead = ( msg.dead.toLowerCase() === 'true' );
+	    }
+            console.log( "got msg from server: " + JSON.stringify( msg) );
+            
+	    if ( msg.operation === 'new' ) {
+		if ( msg.type === 'para' ) {
+	            viewNewPara( msg );
+		} else if ( msg.type === 'frag' ) {
+	            viewNewFrag( msg );
+		}
+	    } else if ( msg.operation === 'kill' ) {
+		viewKillElement( msg );
+	    } else if ( msg.operation === 'style' ) {
+		viewChangeStyle( msg );
+	    } else {
+		console.log( "unknown operations from server: " + msg.operation );
+	    }
+	};
+
     }
     
     /******* init and setup coe **********************/
@@ -610,6 +671,7 @@ Fluffy.Edit = (function () {
 	docRidEnd   = 'rid1';
 	cursonInit( docRidStart );
 	updateTrackTime();
+	webSocketInit();
         modelLoad();
     }
 
