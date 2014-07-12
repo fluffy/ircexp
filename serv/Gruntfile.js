@@ -180,41 +180,75 @@ module.exports = function(grunt) {
         },
 
         scp: {
-            options: {
-                host:  secret.prod.host,
-                username:  secret.prod.username,
-                privateKey:  grunt.file.read( secret.prod.privateKeyLoc ),
-            },
-            deploy: {
+            prod: {
+                options: {
+                    host:  secret.prod.host,
+                    username:  secret.prod.username,
+                    privateKey:  grunt.file.read( secret.prod.privateKeyLoc ),
+                },
                 files: [{
                     cwd: '.',
                     src: [ 'package.json', 
                            'secret.json', 
-                           'sink.ngninx.gen.conf',
+                           'nginx.gen-prod.conf',
                            'static/bundle<%= pkg.version %>/**',
-                           'static-dev/bundle<%= pkg.version %>/**',
                            'serv.js' ],
                     filter: 'isFile',
                     dest: '/usr/local/sink',
                     createDirectories: true
                 }]
             },
+            test: {
+                options: {
+                    host:  secret.test.host,
+                    username:  secret.test.username,
+                    privateKey:  grunt.file.read( secret.test.privateKeyLoc ),
+                },
+                files: [{
+                    cwd: '.',
+                    src: [ 'package.json', 
+                           'secret.json', 
+                           'nginx.gen-test.conf',
+                           'static-dev/bundle<%= pkg.version %>/**',
+                           'serv.js' ],
+                    filter: 'isFile',
+                    dest: '/usr/local/sink-test',
+                    createDirectories: true
+                }]
+            },
         },
 
         'string-replace': {
-            dist: {
+            prod: {
                 files: {
-                    'sink.ngninx.gen.conf': 'sink.ngninx.conf'
+                    'nginx.gen-prod.conf': 'nginx.tls.conf'
                 },
                 options: {
                     replacements: [
                         {
-                            pattern: /DOMAIN/ig,
+                            pattern: /DOMAIN/g,
                             replacement: secret.prod.domain
                         },
                         {
-                            pattern: /PORT/ig,
+                            pattern: /PORT/g,
                             replacement: secret.prod.port
+                        }
+                    ]
+                }
+            },
+            test: {
+                files: {
+                    'nginx.gen-test.conf': 'nginx.conf'
+                },
+                options: {
+                    replacements: [
+                        {
+                            pattern: /DOMAIN/g,
+                            replacement: secret.test.domain
+                        },
+                        {
+                            pattern: /PORT/g,
+                            replacement: secret.test.port
                         }
                     ]
                 }
@@ -223,7 +257,7 @@ module.exports = function(grunt) {
 
         sshexec: {
             prod: {
-                command: ['sudo cp /usr/local/sink/sink.ngninx.gen.conf /etc/nginx/sites-available/sink.ngninx.conf',
+                command: ['sudo cp /usr/local/sink/nginx.gen-prod.conf /etc/nginx/sites-available/sink-prod.conf',
                           '(cd /usr/local/sink; npm install) ',
                           'sudo forever restartall',
                           'sudo service nginx restart'
@@ -232,6 +266,18 @@ module.exports = function(grunt) {
                     host: secret.prod.host,
                     username: secret.prod.username,
                     privateKey:  grunt.file.read( secret.prod.privateKeyLoc ),
+                }
+            },
+            test: {
+                command: ['sudo cp /usr/local/sink-test/nginx.gen-test.conf /etc/nginx/sites-available/sink-test.conf',
+                          '(cd /usr/local/sink-test; npm install) ',
+                          'sudo forever restartall',
+                          'sudo service nginx restart'
+                         ],
+                options: {
+                    host: secret.test.host,
+                    username: secret.test.username,
+                    privateKey:  grunt.file.read( secret.test.privateKeyLoc ),
                 }
             }
         }
@@ -268,8 +314,14 @@ module.exports = function(grunt) {
     // Alias task for release
     grunt.registerTask('deploy', function () {
         grunt.task.run('release');   
-        grunt.task.run('scp');    
-        grunt.task.run('sshexec');    
+        grunt.task.run('scp:prod');    
+        grunt.task.run('sshexec:prod');    
+    });
+
+   grunt.registerTask('deploy-test', function () {
+        grunt.task.run('release:test');   
+        grunt.task.run('scp:test');    
+        grunt.task.run('sshexec:test');    
     });
 
     // Default task(s).

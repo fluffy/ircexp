@@ -31,7 +31,7 @@ var mongoose = require('mongoose');
 var db = mongoose.connection;
 
 var passport = require('passport');
-var LinkedInStrategy = require('passport-linkedin-oauth2').Strategy;
+var LinkedInStrategy = require('passport-linkedin').Strategy;
 
 var responseTime = require('response-time');
 var session = require('express-session');
@@ -182,9 +182,10 @@ redis.on( "disconnect" , function () {
 
 
 passport.use(new LinkedInStrategy({
-    clientID: config.linkedInApiKey, 
-    clientSecret: config.linkedInSecretKey, 
-    callbackURL: config.linkedInCallbackUrl // This URL needs to be registered with linkedIn
+    consumerKey: config.linkedInApiKey, 
+    consumerSecret: config.linkedInSecretKey, 
+    callbackURL: config.linkedInCallbackUrl, // This URL needs to be registered with linkedIn
+    profileFields: ['id', 'first-name', 'last-name', 'email-address', 'picture-url;secure=true' ]
   },
   function (accessToken, refreshToken, profile, done) { 
 
