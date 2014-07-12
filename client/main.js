@@ -10,8 +10,8 @@ Fluffy.Edit = (function () {
     "use strict";
 
     var trackSinceTime = 1;
-    var userName = "Fluffy";
-    var userPhotoUrl = "fluffy.jpg";
+    var userName;
+    var userPhotoUrl;
     var docName;
     var docRidStart;
     var docRidEnd;
@@ -655,7 +655,39 @@ Fluffy.Edit = (function () {
 	var cacheTime = 1;
     }
 
- 
+    /* user info **************************/
+
+    function updateUserInfo() {
+	var result;
+
+	userName = localStorage.getItem( "userName" );
+	userPhotoUrl = localStorage.getItem( "userPhotoUrl" );
+	
+	$.ajax({
+            url: "/v1/userMeta/me"
+	}).done( function (data) {
+            result = JSON.parse( data );
+            console.log( "user meta: " + data );
+            if ( result.status !== "OK" ) {
+		console.log( "retreiving of user info got error: " + result );
+            } 
+            else {
+		userName = result.firstName + " " + result.lastName; 
+		userPhotoUrl = result.photoUrl; 
+
+		localStorage.setItem( "userName", userName );
+		localStorage.setItem( "userPhotoUrl", userPhotoUrl );
+
+		console.log( "Got user info for = " + userName );
+		console.log( "Got user photo URL = " + userPhotoUrl );
+		
+            }
+	}).fail( function (jqXHR,status) {
+            console.log( "retreiving tracktime failed: " + status + jqXHR.url);
+	});
+
+    }
+
     /****** crypto and hash code  */
 
     function lameHash( str ) {
@@ -754,6 +786,8 @@ Fluffy.Edit = (function () {
 	//console.log( "rid start,end = " + docRidStart + " " + docRidEnd );
 	
 	cursonInit( docRidStart );
+	
+	updateUserInfo();
 	
 	updateTrackTime();
 	
