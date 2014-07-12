@@ -24,6 +24,9 @@ var fs = require('fs');
 var mongoose = require('mongoose');
 var db = mongoose.connection;
 
+var passport = require('passport');
+var LinkedInStrategy = require('passport-linkedin-oauth2').Strategy;
+
 var config = require('./secret.json');
 
 var responseTime = require('response-time');
@@ -117,6 +120,18 @@ var Element = mongoose.model('Element', elementSchema);
 
 
 
+var userSchema = mongoose.Schema({
+    uId: { type: String, index: true, required:true, unique: true  },
+    linkedInID:  { type: String },
+    firstName: String, 
+    lastName: String, 
+    photoUrl: String
+});
+
+var User = mongoose.model('User', userSchema);
+
+
+
 db.on('error', function() {
     console.log( "Error connecting to mongodb" );
     process.exit(1); // todo 
@@ -144,6 +159,7 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
 
+
 app.use( morgan('dev') ); 
 
 app.use(cookieParser( config.cookieSecret)); 
@@ -161,10 +177,99 @@ redis.on( "disconnect" , function () {
 });
 
 
+/**************** Identity ********************/
+
+
+passport.use(new LinkedInStrategy({
+    clientID: config.linkedInApiKey, 
+    clientSecret: config.linkedInSecretKey, 
+    callbackURL: config.linkedInCallbackUrl // This URL needs to be registered with linkedIn
+  },
+  function (accessToken, refreshToken, profile, done) { 
+
+      if ( devMode ) {
+          console.log( "accessToken is" , accessToken );
+          console.log( "refreshToken is" , refreshToken );
+      }
+      //console.log( "profile is" , profile );
+      console.log( "id is" , profile._json.id );
+      console.log( "f name is" , profile._json.firstName );
+      console.log( "l name is" , profile._json.lastName );
+      console.log( "photo is" , profile._json.pictureUrl );
+
+      User.findOneAndUpdate( 
+	  { uId:  profile._json.id },
+          { $set: { linkedInID: profile._json.id,
+                    firstName: profile._json.firstName, 
+                    lastName: profile._json.lastName, 
+                    photoUrl: profile._json.pictureUrl
+                  } }, 
+	  { upsert:true },
+          function(err) {
+	      if (err) {
+		  console.log( "Problem updating user record: " + err );
+	      } else
+	      {
+		  console.log( "Logged in user " + profile._json.firstName  );
+	      }
+	  });
+
+
+    // asynchronous verification, for effect...
+    process.nextTick(function () {
+      return done(null, profile);
+    });
+  }
+));
+
+
+
+passport.serializeUser(function(user, done) {
+    //console.log( "serialize user = " + JSON.stringify( user.id ) );
+    done(null, user.id );
+});
+
+passport.deserializeUser(function(obj, done) {
+    //console.log( "de serial obj = " + JSON.stringify( obj ) );
+    done(null, obj);
+});
+
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+
+/****** login  ******/
+
+app.get('/auth/linkedin',
+                passport.authenticate('linkedin', { state: 'TODO'  }),
+          function(req, res){
+              console.log("should never get here" );
+            // The request will be redirected to LinkedIn for authentication, so this
+            // function will not be called.
+          });
+
+
+app.get('/auth/linkedin/callback', 
+        passport.authenticate('linkedin', {
+            successRedirect: '/',
+            failureRedirect: '/login'
+}));
+
+app.get('/login', function(req, res){
+    res.sendfile( __dirname + bundlePath + "/html/login.gen.html" );
+});
+
+
+app.get('/logout', function(req, res){
+  req.logout();
+  res.redirect('/');
+});
+
 /********** Handle Messages ***************/
 
 
-function processMesssage( msg ) {
+function executeMesssage( msg ) {
     if ( msg.operation === 'new' ) {
 	var e = new Element( msg );
 
@@ -210,11 +315,42 @@ function processMesssage( msg ) {
 }
 
 
+function processMesssage( msg ) {
+    // fix up any missing data in message then execute it 
+    if ( ( msg.operation === 'new' ) &&  ( msg.type === 'para' ) ) {
+	// look up user info and set relevant crator stuff for the para
+	User.findOne( { uId: msg.creatorUId } ).lean().exec( function(err,result) {
+	    if (err) {
+		console.log( "Error reading user data from db: " + err );
+	    }
+	    else {
+		if ( result ) {
+		    console.log( " result = " + JSON.stringify( result ) );
+		    msg.iconURL = result.photoUrl; 
+		    msg.creatorDisplayName = result.firstName +" "+ result.lastName ;
+		    executeMesssage( msg );
+		}
+		else {
+		    console.log( "error can find user but should be authenticated" );
+		}
+	    }
+	} );
+    }
+    else {
+	executeMesssage( msg );
+    }
+}
+
 /******* API Calls *****/
 
 
 app.get('/v1/rids', function(req,res) {
     var db = req.db;
+
+    if ( !req.isAuthenticated()) {
+        res.send( JSON.stringify( { status: "FAIL AUTH"} ) );
+        return;
+    }
 
     Element.find().lean().sort('creationTime').exec( function (err, result) {
         var e,o;
@@ -238,13 +374,52 @@ app.get('/v1/rids', function(req,res) {
 
 
 app.post('/v1/update',  function(req, res){  
-  
+    if ( !req.isAuthenticated()) {
+	console.log( 'error update but not autheticated' ); 
+        res.send( JSON.stringify( { status: "FAIL AUTH"} ) );
+        return;
+    }
+
+    //console.log( "User " + req.user + " update  " );
+    //console.log( "param = " + JSON.stringify(req.params) );
+    //console.log( "body = " + JSON.stringify(req.body) );
+
+    // todo check time not in future 
+
+    req.body.creatorUId = req.user;
     processMesssage( req.body );
 
     res.send( JSON.stringify( { status: "OK" } )  );
 });
 
 
+
+app.get('/v1/userMeta/me', function(req,res) {
+    var db = req.db;
+    if ( !req.isAuthenticated()) {
+        res.send( JSON.stringify( { status: "FAIL AUTH"} ) );
+        return;
+    }
+
+    User.findOne( { uId: req.user } ).lean().exec( function (err, result) {
+	if (err) {
+	    console.log( "Error reading docMeta from db: " + err );
+	}
+	else {
+	    if ( result )
+	    {
+		delete result._id; delete result.__v; 
+		result.status = "OK";
+	        res.send( JSON.stringify( result ) );
+	    }
+	    else {
+		console.log( "Error finding any userMeta from db: " + err );
+	        res.send( JSON.stringify( { status: "FAIL"} ) );
+	    }
+	}
+
+    });
+});
 
 
 
@@ -256,7 +431,13 @@ app.get('/', function(req, res){
 });
 
 app.get('/doc/:docName', function(req, res){
-    res.sendfile( __dirname + bundlePath + "/html/main.gen.html" ); 
+    if ( !req.isAuthenticated()) {
+        res.redirect('/login');
+    }
+    else {
+        console.log( "In doc, user " + req.user + " requesting doc " + req.params.docName );
+        res.sendfile( __dirname + bundlePath + "/html/main.gen.html" ); 
+    }
 });
 
 /****** Server and WS Server ***/

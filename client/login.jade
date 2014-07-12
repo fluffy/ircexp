@@ -1,0 +1,17 @@
+doctype html
+html
+    head
+         link( href="#{cssLibDir}/bootstrap.css" rel="stylesheet" media="screen")
+         link( href="#{cssLibDir}/font-awesome.css" rel="stylesheet")
+body 
+    H1 Login
+    div
+      a.btn.btn-linkedin( href="/auth/linkedin" )
+        i.fa.fa-linkedin 
+         
+    if debug 
+      script( src="#{jsLibDir}/jquery.js" )
+      script( src="#{jsLibDir}/bootstrap.js" )
+    else
+      script( src="#{jsLibDir}/jquery.min.js" )
+      script( src="#{jsLibDir}/bootstrap.min.js" )

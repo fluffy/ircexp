@@ -26,7 +26,8 @@ module.exports = function(grunt) {
 		    }
 		},
 		files: {
-		    "main.gen.html": ["main.jade"]
+		    "main.gen.html": ["main.jade"],
+		    "login.gen.html": ["login.jade"]
 		}
 	    }
 	},

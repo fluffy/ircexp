@@ -27,7 +27,8 @@ module.exports = function(grunt) {
                     }
 		},
 		files: {
-		    "static-dev/bundle<%= pkg.version %>/html/main.gen.html": ["../client/main.jade"]
+		    "static-dev/bundle<%= pkg.version %>/html/main.gen.html": ["../client/main.jade"],
+		    "static-dev/bundle<%= pkg.version %>/html/login.gen.html": ["../client/login.jade"]
 		}
 	    },
 	    prod: {
@@ -42,7 +43,8 @@ module.exports = function(grunt) {
                     }
 		},
 		files: {
-		    "static/bundle<%= pkg.version %>/html/main.gen.html": ["../client/main.jade"]
+		    "static/bundle<%= pkg.version %>/html/main.gen.html": ["../client/main.jade"],
+		    "static/bundle<%= pkg.version %>/html/login.gen.html": ["../client/login.jade"]
 		}
 	    }
 	},
