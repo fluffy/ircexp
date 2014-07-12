@@ -1,0 +1,22 @@
+{
+  "name": "fluffy-test-client1",
+  "description": "Fluffy Test Client 1",
+  "version": "0.0.1",
+  "private": true,
+  "engines": {
+    "node": "0.x",
+    "npm": "1.x"
+  },
+  "devDependencies": {
+    "bower": ">=1.3.5",
+    "grunt": ">=0.4.5",
+    "stylus": ">=0.46.2",
+    "grunt-jslint": ">=1.1.12",
+    "grunt-contrib-jshint": ">=0.10.0",
+    "grunt-contrib-jade": ">=0.12.0",
+    "grunt-contrib-stylus": ">=0.17.0",
+    "grunt-contrib-copy": ">=0.5.0"
+  },
+  "dependencies": {
+  }
+}
