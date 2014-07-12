@@ -568,6 +568,7 @@ Fluffy.Edit = (function () {
 
     $(document).keypress( function(e) {
 	var para, frag;
+
 	//console.log( "event press charCode " + JSON.stringify( e.charCode ) );
 	//console.log( "event press keyCode " + JSON.stringify( e.keyCode ) );
 	if ( e.keyCode  === 13 ) { // return key pressed
@@ -606,7 +607,28 @@ Fluffy.Edit = (function () {
 	var cacheTime = 1;
     }
 
+ 
+    /****** crypto and hash code  */
 
+    function lameHash( str ) {
+	var len, hash, i;
+        // todo - replace webcrypto sha1
+
+	// string hash from Java 
+	len = str.length;
+	if ( len === 0) {
+	    return 0;
+	}
+	hash = 0;
+	for ( i = 0;  i < len; i = i+1 ) {
+	    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+	    hash |= 0; 
+	}
+	if ( hash < 0 ) {
+	    hash = -hash;
+	}
+	return hash;
+    }
 
     /* WebSocekt Communication stuff *******************/
 
@@ -667,11 +689,28 @@ Fluffy.Edit = (function () {
     /******* init and setup coe **********************/
 
     function init() {
-	docRidStart = 'rid0';
-	docRidEnd   = 'rid1';
+	var path;
+	
+	path = String(window.location.pathname).split('/');
+	docName = path[2];
+	console.log( "docName = " + docName );
+	
+	docRidStart = 'rid' + lameHash( docName + "start" );
+	docRidEnd = 'rid' + lameHash( docName + "end" );
+	
+	$( 'div#ridStart' ).replaceWith( "<div id='" + docRidStart + "'>" +
+					 "<span id='" + docRidStart + "'></span>" +
+					 "<span id='" + docRidEnd + "'></span>" +
+					 "</div>" ); 
+	
+	//console.log( "rid start,end = " + docRidStart + " " + docRidEnd );
+	
 	cursonInit( docRidStart );
+	
 	updateTrackTime();
+	
 	webSocketInit();
+	
         modelLoad();
     }
 

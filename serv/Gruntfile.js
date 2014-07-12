@@ -166,8 +166,42 @@ module.exports = function(grunt) {
         clean: {
             dev: ["static-dev"],
             prod: ["static"]
-        }
-       
+        },
+
+        scp: {
+            options: {
+                host:  '<%= secret.host %>',
+                username:  '<%= secret.username %>',
+                privateKey:  grunt.file.read( "/Users/fluffy/.ssh/id_rsa" ),
+            },
+            deploy: {
+                files: [{
+                    cwd: '.',
+                    src: [ 'serv11.js' , 'static/**' ],
+                    filter: 'isFile',
+                    dest: '/home/fluffy/serv',
+                    createDirectories: true
+                }]
+            },
+        },
+
+        secret: grunt.file.readJSON('secret.json'),
+
+        sftp: {
+            test: {
+                files: {
+                    "./": [ "serv11.js", "static/**" ]
+                },
+                options: {
+                    path: './serv/',
+                    host:  '<%= secret.host %>',
+                    username:  '<%= secret.username %>',
+                    privateKey:  grunt.file.read( "/Users/fluffy/.ssh/id_rsa" ),
+                    showProgress: true
+                }
+            }
+        },
+        
     });
 
     grunt.loadNpmTasks('grunt-contrib-jade');
@@ -178,6 +212,8 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-bumpup');
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-clean');
+    grunt.loadNpmTasks('grunt-scp');
+    grunt.loadNpmTasks('grunt-ssh');
     grunt.loadNpmTasks('grunt-text-replace');
     grunt.loadNpmTasks('grunt-jslint'); 
 
@@ -193,6 +229,13 @@ module.exports = function(grunt) {
         grunt.task.run('copy');      
         grunt.task.run('concat');      
         grunt.task.run('uglify');      
+    });
+
+    // Alias task for release
+    grunt.registerTask('push', function () {
+          //grunt.task.run('release');    
+        grunt.task.run('scp');    
+        //grunt.task.run('sftp');    
     });
 
     // Default task(s).
