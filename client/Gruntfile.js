@@ -42,9 +42,32 @@ module.exports = function(grunt) {
                 files: [
                     {
 			expand: true, flatten: true, 
+			src: ['lib/font-awesome/css/font-awesome.css'], 
+			dest: 'lib/css/', filter: 'isFile'},
+		    {
+			expand: true, flatten: true, 
+			src: ['lib/bootstrap/dist/css/bootstrap.css'], 
+			dest: 'lib/css/', filter: 'isFile'},
+                    {
+			expand: true, flatten: true, 
+			src: ['lib/bootstrap/dist/fonts/glyphicons-halflings-regular.woff'], 
+			dest: 'lib/fonts/', filter: 'isFile'},   
+		    {
+			expand: true, flatten: true, 
+			src: ['lib/font-awesome/fonts/fontawesome-webfont.woff'], 
+			dest: 'lib/fonts/', filter: 'isFile'},
+                    {
+			expand: true, flatten: true, 
 			src: ['lib/jquery/dist/jquery.js'], 
-			dest: 'lib/js/', filter: 'isFile'
-                    }
+			dest: 'lib/js/', filter: 'isFile'},
+                    {
+			expand: true, flatten: true, 
+			src: ['lib/bootstrap/dist/js/bootstrap.js'], 
+			dest: 'lib/js/', filter: 'isFile'},
+                    {
+			expand: true, flatten: true, 
+			src: ['lib/underscore/underscore.js'], 
+			dest: 'lib/js/', filter: 'isFile'},
                 ]
             }
         }

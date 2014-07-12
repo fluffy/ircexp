@@ -2,6 +2,8 @@ doctype html
 html
   head
     title Sink Test
+    link( href="#{cssLibDir}/bootstrap.css" rel="stylesheet" media="screen")
+    link( href="#{cssLibDir}/font-awesome.css" rel="stylesheet")
     link( href="#{cssDir}/main.gen.css" rel="stylesheet" )
   body
     div#t2
@@ -9,5 +11,15 @@ html
           span#rid0.text-Normal
           span#rid1.text-Normal
       div#cur | 
-  script( src="#{jsLibDir}/jquery.js" )
-  script( src="#{jsDir}/main.js" )
+    if debug 
+      script( src="#{jsLibDir}/jquery.js" )
+      script( src="#{jsLibDir}/bootstrap.js" )
+      script( src="#{jsLibDir}/underscore.js" )
+      script( src="#{jsDir}/main.js" )
+    else
+      script( src="#{jsLibDir}/jquery.min.js" )
+      script( src="#{jsLibDir}/bootstrap.min.js" )
+      script( src="#{jsLibDir}/underscore.min.js" )
+      script( src="#{jsDir}/main.min.js" )
+
+
