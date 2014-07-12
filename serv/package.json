@@ -6,8 +6,11 @@
   "dependencies": {
     "express": ">=4.0",
     "mongoose": ">=1.4.5",
+    "morgan": ">=1.1.1",
+    "serve-static": ">=1.2.3",
+    "serve-index": ">=1.1.1",
     "body-parser": ">=1.4.3",
-    "serve-static": ">=1.2.3"
+    "express-session": ">=1.5.1"
   },
   "engines": {
     "node": ">=0.10.0",
@@ -15,6 +18,16 @@
   },
   "devDependencies": {
     "grunt": ">=0.4.5",
-    "grunt-contrib-jshint": ">=0.10.0"
+    "stylus": ">=0.46.2",
+    "grunt-contrib-jshint": ">=0.10.0",
+    "grunt-contrib-uglify": ">=0.4.0",
+    "grunt-bumpup": ">=0.5.2",
+    "grunt-contrib-copy": ">=0.5.0",
+    "grunt-contrib-clean": ">=0.5.0",
+    "grunt-text-replace": ">=0.3.12",
+    "grunt-contrib-concat": ">=0.4.0",
+    "grunt-contrib-jade": ">=0.12.0",
+    "grunt-contrib-stylus": ">=0.17.0",
+    "grunt-jslint": ">=1.1.12"
   }
 }
