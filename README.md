@@ -67,7 +67,30 @@ From within the serv directory, run it with:
 
 Open browser at appropriate page
 
-Enjoy! 
+Enjoy!
+
+# Install on Rackspace
+
+Create server Ubuntu 14.04 LTS
+
+Make sure you can ssh onto it. Rackspace will add your ssh pub key be default if
+configured
+
+Setup server with commands along lines of stuff in setupServer.sh file
+
+Copy your certificate and key to server is using TLS
+
+Set up your DNS to point to the server
+
+Set up your linkedIn application with correct URLs
+
+Set up your secret.json with username and hostname of production server in prod section
+
+"grunt deploy" to push a new version to prod server
+
+On the production server run commands from deploy.sh
+
+
 
 
 
