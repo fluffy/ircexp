@@ -119,6 +119,14 @@ var elementSchema = mongoose.Schema({
 var Element = mongoose.model('Element', elementSchema);
 
 
+var userDocSchema = mongoose.Schema({
+    uId: { type: String, index: true, required:true, unique: false  },
+    docId: { type: String, required:true }, 
+    trackTime: Number
+});
+
+var UserDoc = mongoose.model('UserDoc', userDocSchema);
+
 
 var userSchema = mongoose.Schema({
     uId: { type: String, index: true, required:true, unique: true  },
@@ -390,6 +398,74 @@ app.post('/v1/update',  function(req, res){
     processMesssage( req.body );
 
     res.send( JSON.stringify( { status: "OK" } )  );
+});
+
+
+app.post('/v1/trackTime/:docName', function(req,res) { 
+    var db = req.db;
+    var data = {};
+
+    if ( !req.isAuthenticated()) {
+        res.send( JSON.stringify( { status: "FAIL AUTH"} ) );
+        return;
+    }
+
+    data.uId = req.user;
+    data.docId = req.params.docName;
+    
+    var now = new Date().getTime();
+    data.trackTime = now; 
+    console.log( "body = " + JSON.stringify( req.body ) );
+    console.log( "client now = " + req.body.trackTime );
+    console.log( "server now = " + now );
+
+    UserDoc.findOneAndUpdate( 
+	{ uId: data.uId, docId: data.docId },
+        { $set: { trackTime: req.body.trackTime } }, 
+	{ upsert:true },
+        function(err) {
+	    if (err) {
+		console.log( "Problem updating track time: " + err );
+	    } else
+	    {
+		console.log( "Update of TrackTime was OK" );
+	    }
+	});
+  
+    res.send( JSON.stringify( { status: "OK", trackTime: req.body.trackTime  } )  );
+});
+
+
+app.get('/v1/docMeta/:docName', function(req,res) {
+    var db = req.db;
+    var data = {};
+
+    if ( !req.isAuthenticated()) {
+        res.send( JSON.stringify( { status: "FAIL AUTH"} ) );
+        return;
+    }
+
+    data.uId = req.user;
+    data.docId = req.params.docName;
+
+    UserDoc.findOne( data ).lean().exec( function (err, result) {
+	if (err) {
+	    console.log( "Error reading docMeta from db: " + err );
+	}
+	else {
+	    if ( result ) {
+		delete result._id; delete result.__v; 
+		result.status = "OK";
+		console.log( "DocMeta returned for user="+data.uId + " doc="+data.docId );
+	        res.send( JSON.stringify( result ) );
+	    }
+	    else {
+		console.log( "Error finding any docMeta from db: " + err );
+	        res.send( JSON.stringify( { status: "FAIL"} ) );
+	    }
+	}
+
+    });
 });
 
 

@@ -708,8 +708,50 @@ Fluffy.Edit = (function () {
 
     /************* Track Time *****************/
 
-     function updateTrackTime() {
-	var cacheTime = 1;
+    $( "#btn-track" ).click(function() {
+	var now;
+
+	console.log( "track button click" );
+	
+	now = new Date().getTime();
+	console.log( "time is " + now );
+	localStorage.setItem( "trackSinceTime", now );
+        
+	$.post( "/v1/trackTime/" +docName , {  
+            trackTime: now 
+	} ).done( function () {
+            window.location.reload(); 
+	}).fail( function ( jqXHR,status) {
+            console.log( "set of track time to db failed: " + status + jqXHR.url );
+	});
+    });
+
+    function updateTrackTime() {
+	var cacheTime, result;
+
+	cacheTime = localStorage.getItem( "trackSinceTime" );
+	console.log( "Got cacheTime " + cacheTime );
+	if ( cacheTime > trackSinceTime ) {
+            trackSinceTime = cacheTime;
+	}
+
+	$.ajax({
+            url: "/v1/docMeta/" + docName
+	}).done( function (data) {
+            result = JSON.parse( data );
+            console.log( "doc meta: " + data );
+            if ( result.status !== "OK" ) {
+		console.log( "retreiving of tracktime got error: " + result );
+            } 
+            else {
+		trackSinceTime = result.trackTime; 
+		localStorage.setItem( "trackSinceTime", trackSinceTime );
+		console.log( "Got dbTrackTime = " + trackSinceTime );
+		
+            }
+	}).fail( function (jqXHR,status) {
+            console.log( "retreiving tracktime failed: " + status +jqXHR.url );
+	});
     }
 
     /* user info **************************/
