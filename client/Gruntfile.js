@@ -35,7 +35,6 @@ module.exports = function(grunt) {
 	stylus: {
 	    compile: {
 		options: {
-		    firebug: false, // todo remove 
 		    compress: false
 		},
 		files: {
@@ -43,6 +42,10 @@ module.exports = function(grunt) {
 		}
 	    }
 	},
+
+        clean: {
+            all: ["main.gen.*", "login.gen.*" ]
+        },
 
         copy: {
             compile: {
@@ -86,6 +89,8 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-stylus');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-jslint'); 
+    grunt.loadNpmTasks('grunt-contrib-clean');
+
 
     grunt.registerTask('default', ['jshint','jade','stylus','copy']);
 

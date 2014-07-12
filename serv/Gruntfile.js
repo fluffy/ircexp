@@ -1,4 +1,13 @@
 module.exports = function(grunt) {
+    "use strict";
+
+    var secret = {};
+    try {
+        secret = grunt.file.readJSON('secret.json');
+    } catch (err) {
+        console.log( "Error: need to create secret.json file" );
+    }
+
 
     // Project configuration.
     grunt.initConfig({
@@ -172,38 +181,60 @@ module.exports = function(grunt) {
 
         scp: {
             options: {
-                host:  '<%= secret.host %>',
-                username:  '<%= secret.username %>',
-                privateKey:  grunt.file.read( "/Users/fluffy/.ssh/id_rsa" ),
+                host:  secret.prod.host,
+                username:  secret.prod.username,
+                privateKey:  grunt.file.read( secret.prod.privateKeyLoc ),
             },
             deploy: {
                 files: [{
                     cwd: '.',
-                    src: [ 'serv11.js' , 'static/**' ],
+                    src: [ 'package.json', 
+                           'secret.json', 
+                           'sink.ngninx.gen.conf',
+                           'static/bundle<%= pkg.version %>/**',
+                           'static-dev/bundle<%= pkg.version %>/**',
+                           'serv.js' ],
                     filter: 'isFile',
-                    dest: '/home/fluffy/serv',
+                    dest: '/usr/local/sink',
                     createDirectories: true
                 }]
             },
         },
 
-        secret: grunt.file.readJSON('secret.json'),
-
-        sftp: {
-            test: {
+        'string-replace': {
+            dist: {
                 files: {
-                    "./": [ "serv11.js", "static/**" ]
+                    'sink.ngninx.gen.conf': 'sink.ngninx.conf'
                 },
                 options: {
-                    path: './serv/',
-                    host:  '<%= secret.host %>',
-                    username:  '<%= secret.username %>',
-                    privateKey:  grunt.file.read( "/Users/fluffy/.ssh/id_rsa" ),
-                    showProgress: true
+                    replacements: [
+                        {
+                            pattern: /DOMAIN/ig,
+                            replacement: secret.prod.domain
+                        },
+                        {
+                            pattern: /PORT/ig,
+                            replacement: secret.prod.port
+                        }
+                    ]
                 }
             }
         },
-        
+
+        sshexec: {
+            prod: {
+                command: ['sudo cp /usr/local/sink/sink.ngninx.gen.conf /etc/nginx/sites-available/sink.ngninx.conf',
+                          '(cd /usr/local/sink; npm install) ',
+                          'sudo forever restartall',
+                          'sudo service nginx restart'
+                         ],
+                options: {
+                    host: secret.prod.host,
+                    username: secret.prod.username,
+                    privateKey:  grunt.file.read( secret.prod.privateKeyLoc ),
+                }
+            }
+        }
     });
 
     grunt.loadNpmTasks('grunt-contrib-jade');
@@ -216,7 +247,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-scp');
     grunt.loadNpmTasks('grunt-ssh');
-    grunt.loadNpmTasks('grunt-text-replace');
+    grunt.loadNpmTasks('grunt-string-replace');
     grunt.loadNpmTasks('grunt-jslint'); 
 
     // Alias task for release
@@ -231,13 +262,14 @@ module.exports = function(grunt) {
         grunt.task.run('copy');      
         grunt.task.run('concat');      
         grunt.task.run('uglify');      
+        grunt.task.run('string-replace');      
     });
 
     // Alias task for release
-    grunt.registerTask('push', function () {
-          //grunt.task.run('release');    
+    grunt.registerTask('deploy', function () {
+        grunt.task.run('release');   
         grunt.task.run('scp');    
-        //grunt.task.run('sftp');    
+        grunt.task.run('sshexec');    
     });
 
     // Default task(s).

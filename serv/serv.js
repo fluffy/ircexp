@@ -6,6 +6,12 @@
 // todo - make work with no linkedin  for auth 
 // todo - check security that have auth on all needed things
 
+var devMode = ((process.env.NODE_ENV || 'prod' ) === 'prod' ) ? false : true ;
+if ( devMode ) {
+    console.log( "Warning: sink in dev mode. NODE_ENV=" + process.env.NODE_ENV );
+}
+var config = require('./secret.json')[process.env.NODE_ENV || 'prod'];
+
 var ws = require('ws');
 var wss = ws.Server;
 var http = require('http');
@@ -27,8 +33,6 @@ var db = mongoose.connection;
 var passport = require('passport');
 var LinkedInStrategy = require('passport-linkedin-oauth2').Strategy;
 
-var config = require('./secret.json');
-
 var responseTime = require('response-time');
 var session = require('express-session');
 var cookieParser = require('cookie-parser');
@@ -49,8 +53,6 @@ var exchange = null;
 
 
 /************ Serve up static files *******/
-
-var devMode = false;
 
 var bundleVersion = "0.0.0";
 var bundlePath = "/bad";
@@ -81,22 +83,13 @@ fs.readFile(__dirname + "/" + "package.json", function (err, file) {
 } );
 
 
-process.argv.slice(2).forEach( function(val /* , index, array*/ ) {
-    // console.log(index + ': ' + val);
-    if ( ( val === '-dev' ) ||  ( val === '--dev' ) )
-    {
-	console.log( "In development mode" );
-	devMode = true;
-    }
-});
-
 /********* DataBase ********/
 
 var elementSchema = mongoose.Schema({
     rid: { type: String, index: true, required:true, unique: true  },
     creationTime: Number, // ms since unix epoch
     creatorUId: String, // coresponds to uID in userDocSchema
-    creatorDisplayName: String,
+    creatorDisplayName: String, // todo - move out of here some time 
 
     // docID: { type: String, index: true, required:true, unique: true  },
     type: String, // frag, marker, para, ...
@@ -113,7 +106,7 @@ var elementSchema = mongoose.Schema({
     text: String, 
     content: String, // text, image, audio, video (text field is URI pointing at data )
 
-    iconURL: String
+    iconURL: String // todo - move out of here some time 
 });
 
 var Element = mongoose.model('Element', elementSchema);
@@ -520,7 +513,7 @@ app.get('/doc/:docName', function(req, res){
 
 
 var server = http.createServer(app);
-server.listen(8080);
+server.listen( config.port );
 console.log('Listening on: http://localhost:' + server.address().port );
 
 function rabbitInit() {
