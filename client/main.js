@@ -16,7 +16,6 @@ Fluffy.Edit = (function () {
     var docRidStart;
     var docRidEnd;
 
-
     /* functions used to add things to the DOM */
 
     function viewNewPara( elem ) {
@@ -61,7 +60,6 @@ Fluffy.Edit = (function () {
 	    });
 	}
     }
-
 
     function viewNewFrag( elem ) {
 	//console.log( "In viewNewFrag" );
@@ -179,7 +177,6 @@ Fluffy.Edit = (function () {
 	return elem;
     }
 
-
     function modelKillElement( rid ) {
 	console.log( "In modelKillElement" );
 
@@ -195,7 +192,6 @@ Fluffy.Edit = (function () {
 
 	return elem;
     }
-
 
     /* cursor managment code ************************************************/ 
 
@@ -445,7 +441,6 @@ Fluffy.Edit = (function () {
 
     return publicExport;
 }());   
-
 
 $(document).ready(function(){
     "use strict";

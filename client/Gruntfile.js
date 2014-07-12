@@ -7,6 +7,12 @@ module.exports = function(grunt) {
             all: ['main.js']
         },
 
+	jslint: {
+	    all: { 
+		src: [ 'main.js' ] 
+	    }
+	},
+
 	jade: {
 	    compile: {
 		options: {
