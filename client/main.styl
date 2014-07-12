@@ -1,16 +1,117 @@
 
+toolbar-heigth = 40px // 32 
+base-font-size = 11pt 
+
+div#outer 
+    //background: #1633ff
+    background: white
+    overflow: hidden
+    height: 100%
+
+div#inner
+    background: #fff
+    overflow: hidden
+    margin-top: toolbar-heigth
+    height: 100%
+
+
+div#toolbar 
+    height  toolbar-heigth 
+    background #333
+
+    position fixed
+    width 100%
+    top 0px /* stick to top */
+
+
+
 div#cur 
     position  fixed
     top  0
     left  0
     color  red
 
+
+
+
 .para-Title 
-    font-size    22pt
+    font-size    floor( base-font-size * 2.5 )
     font-weight  bold
 
+
+.para-Heading 
+    font-size    floor( base-font-size * 1.75 )
+    font-weight  bold
+
+
+.para-SubHeading 
+    font-size    floor( base-font-size * 1.5 )
+    font-weight  bold
+
+
 .para-Body 
-    font-size    11pt
+    font-size    base-font-size
+
+
+.para-Note 
+    font-size    base-font-size
+    margin-left  30px
+    margin-top   10px
+    margin-bottom 20px
+
+
+.para-SubNote 
+    font-size    base-font-size
+    margin-left  50px
+    margin-top   10px
+    margin-bottom 20px
+
+
+// todo bullet does not work 
+.para-Bullet:before 
+    font-size    base-font-size
+    content  "*" "  " //list-disc
+    display  inline
+
+.para-Bullet 
+    font-size    base-font-size
+
+.para-ListFirst 
+    font-size    base-font-size
+    counter-reset  list-counter
+    counter-increment  list-counter
+
+
+.para-ListFirst:before 
+    font-size    base-font-size
+    content  counter(list-counter) "  "
+    display  inline
+
+
+.para-ListNext 
+    font-size    base-font-size
+    counter-increment list-counter  
+
+
+.para-ListNext:before 
+    font-size    base-font-size
+    content  counter(list-counter)  "  "
+    display  inline
+
+
+.text-Bold 
+    font-weight  bold
+
+.text-Normal 
+
+.text-Italic 
+    font-style  italic
+
+.text-MonoSpace
+    font-family "Courier New",monospace
+
+
+
 
 span.dead 
    display  none
@@ -20,6 +121,74 @@ span.selected
 
 span.old
     color red !important
+    text-decoration line-through
 
 span.new
-    color green
+    //color green
+    background-color #CFF
+
+
+div.para-Note div.note-name
+    display inline 
+
+div.para-Note img.note-icon
+    display inline 
+
+div.para-Note div.note-time
+    display inline 
+
+div.para-Note div.note-space
+    display block 
+
+
+div.para-SubNote div.note-name
+    display inline 
+
+div.para-SubNote img.note-icon
+    display inline 
+
+div.para-SubNote div.note-time
+    display inline 
+
+div.para-SubNote div.note-space
+    display block 
+
+
+div div.note-name
+    display none
+
+div img.note-icon
+    display none
+
+div div.note-time
+    display none
+
+div div.note-space
+    display none
+
+.note-icon 
+   float left
+   margin-right 20px
+   height 24px
+   width 24px
+
+.note-time
+   color grey
+   float right
+
+.note-space
+   //background-color yellow
+   width 20px
+   height 1px
+   clear right 
+
+
+.note-name
+   margin-right: 2em 
+
+.note-name:after 
+   content " says: "
+
+.note-time
+    margin-right: 1em
+

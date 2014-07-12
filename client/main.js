@@ -48,6 +48,23 @@ Fluffy.Edit = (function () {
             span = $( "<span id='" +  elem.rid + "'></span>" );
             span.addClass( 'paraMarker' ); 
             newDiv.prepend( span );
+            
+	    var space =  $( "<div></div>" );
+	    space.addClass( 'note-space' );
+	    newDiv.prepend( space );
+
+	    var d = new Date( elem.creationTime );
+	    var time =  $( "<div>" + d.toLocaleTimeString() + "</div>" );
+	    time.addClass( 'note-time' );
+	    newDiv.prepend( time );
+
+	    var name =  $( "<div>" +elem.creatorDisplayName+ "</div>" );
+	    name.addClass( 'note-name' );
+	    newDiv.prepend( name );
+	    
+	    var icon = $( "<img src='"+elem.iconURL+"'></span>" );
+	    icon.addClass( 'note-icon' );
+	    newDiv.prepend( icon );
 	    
             // take spans after split point and put in newDiv
             var spans = $( 'span#' + elem.prev ).nextAll(); 
@@ -81,12 +98,16 @@ Fluffy.Edit = (function () {
 	if ( elem.content === 'text' ) {
             span = $( "<span id='" + elem.rid + "'>" + elem.text + "</span>" );
 	}
+	else if  ( elem.content === 'image' ) {
+            span = $( "<span id='" + elem.rid + "'><img src='" + elem.text + "' height='24' width='24'></span>" );
+	}
 	else {
             console.log( "Unknown content of " + elem.content ); // todo 
 	    console.log( "Elem = " + JSON.stringify( elem ) );
 	}
 
 	$( 'span#' + elem.prev ).after( span );
+	viewChangeStyle( elem );
 
 	if ( span ) {
 	    span.click( function (e) { 
@@ -104,6 +125,34 @@ Fluffy.Edit = (function () {
 	}
     }
 
+    function viewChangeStyle( elem ) { 
+	//console.log( "In viewChangeStyle" );
+	var object=null;
+
+	//console.log( "elem=" + JSON.stringify( elem ) );
+
+	if ( elem.type === 'para' ) {
+            object = $( 'div#' + elem.rid );
+	} else if  ( elem.type === 'frag' ) {
+            object = $( 'span#' + elem.rid );
+	}
+
+	object.removeClass().addClass( elem.style ); 
+
+	if ( elem.dead) {
+	    if ( elem.creationTime < trackSinceTime ) {
+		object.addClass( 'dead' ); 
+            } else {
+		object.addClass( 'old' ); 
+            }
+	} else {
+	    if ( elem.creationTime < trackSinceTime ) {
+		object.addClass( 'not-dead' ); 
+            } else {
+		object.addClass( 'new' ); 
+            }
+	}
+    }
 
     function viewKillElement( elem ) {
 	console.log( "In viewKillElement" );
@@ -193,6 +242,18 @@ Fluffy.Edit = (function () {
 	return elem;
     }
 
+    function getNextParaStyle( rid ) {
+	var para = $( 'span#' + rid ).parent();
+	var nextStyle = 'para-Body';
+
+	if ( para.hasClass('para-Note') ) { nextStyle = 'para-SubNote'; }
+	if ( para.hasClass('para-SubNote') ) { nextStyle = 'para-SubNote'; }
+	if ( para.hasClass('para-Bullet') ) { nextStyle = 'para-Bullet'; }
+	if ( para.hasClass('para-ListFirst') ) { nextStyle = 'para-ListNext'; }
+
+	return nextStyle;
+    }
+
     function modelNewPara( prevRid ) {
 	var elem = {};  // todo move all elem.foo = into here 
 	console.log( "In modelNewPara" );
@@ -203,7 +264,7 @@ Fluffy.Edit = (function () {
 
 	elem.prev = prevRid;
 	elem.dead = false;
-	elem.style = 'para-Body';
+	elem.style = getNextParaStyle( prevRid );
 
 	elem.creatorDisplayName = userName;
 	elem.iconURL = userPhotoUrl;
@@ -219,6 +280,39 @@ Fluffy.Edit = (function () {
 	return elem;
     }
 
+    function modelChangeParaStyle( paraRid, style ) {
+	console.log( "In modelChangeParaStyle" );
+
+	var elem = {
+            rid:  paraRid,
+            type: 'para',
+            style: style,
+            styleModTime: new Date().getTime(),
+            operation: 'style'
+	};
+
+	viewChangeStyle( elem );
+	modelSendUpdate( elem );
+
+	return elem;
+    }
+
+    function modelChangeFragStyle( fragRid, style ) {
+	console.log( "In modelChangeTextStyle" );
+	
+	var elem = {
+            rid:  fragRid,
+            type: 'frag',
+            style: style,
+            styleModTime: new Date().getTime(),
+            operation: 'style'
+	};
+
+	viewChangeStyle( elem );
+	modelSendUpdate( elem );
+
+	return elem;
+    }
 
     function modelKillElement( rid ) {
 	console.log( "In modelKillElement" );
@@ -236,6 +330,40 @@ Fluffy.Edit = (function () {
 	return elem;
     }
 
+      /* UI code for style menus */ 
+
+    $('#para-menu li a').click(function() {
+	var style, p, paras;
+
+	console.log( "Click text = " + $(this).text() );
+
+	//var divRid = $( 'span#' + cursorGetRid() ).parent().attr('id');
+	style = "para-" + $(this).text();
+	
+	paras = getSelectedPara();
+	for( p in paras ) {
+	    if ( paras.hasOwnProperty( p ) ) {
+		modelChangeParaStyle( p, style );
+	    }
+	}
+    });
+
+    $('#text-menu li a').click(function() {
+	var frags, style, f;
+
+	console.log( "Click text menu = " + $(this).text() );
+
+	//var selObj = window.getSelection();
+	//var range  = selObj.getRangeAt(0); // TODO - check num ranages 
+	style = "text-" + $(this).text();
+
+	frags = getSelectedFrag();
+	for ( f in frags ) {
+	    if ( frags.hasOwnProperty( f ) ) {
+		modelChangeFragStyle( f, style );
+	    }
+	}
+    });
 
     /* cursor managment code ************************************************/ 
 
@@ -469,13 +597,19 @@ Fluffy.Edit = (function () {
 	}
     });
 
+    /************* Track Time *****************/
 
-    /******* init and setup **********************/
+     function updateTrackTime() {
+	var cacheTime = 1;
+    }
+    
+    /******* init and setup coe **********************/
 
     function init() {
 	docRidStart = 'rid0';
 	docRidEnd   = 'rid1';
 	cursonInit( docRidStart );
+	updateTrackTime();
         modelLoad();
     }
 

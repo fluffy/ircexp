@@ -8,7 +8,32 @@ html
     link( href="#{cssLibDir}/font-awesome.css" rel="stylesheet")
     link( href="#{cssDir}/main.gen.css" rel="stylesheet" )
   body
-    div#t2
+   div#outer
+    div#toolbar
+       if true 
+        div.btn-group
+          button.btn.btn-default.dropdown-toggle( type="button" data-toggle="dropdown" ) Paragraph
+            span.caret
+          ul#para-menu.dropdown-menu(role="menu")
+            li: a(href="#") Title
+            li: a(href="#") Heading
+            li: a(href="#") SubHeading
+            li: a(href="#") Body
+            li: a(href="#") Bullet
+            li: a(href="#") ListFirst
+            li: a(href="#") ListNext
+            li: a(href="#") Note
+            li: a(href="#") SubNote
+        div.btn-group
+          button.btn.btn-default.dropdown-toggle( type="button" data-toggle="dropdown" ) Text
+            span.caret
+          ul#text-menu.dropdown-menu(role="menu")
+            li: a(href="#") Normal
+            li: a(href="#") Bold
+            li: a(href="#") Italic
+            li: a(href="#") MonoSpace
+    div#inner
+     div#t2
       div#rid0.para-Body
           span#rid0.text-Normal
           span#rid1.text-Normal
