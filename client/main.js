@@ -332,7 +332,64 @@ Fluffy.Edit = (function () {
 	return elem;
     }
 
-      /* UI code for style menus */ 
+    /* stuff for offline managment */ 
+
+    var onlineState = true;
+    var connectedState = true;
+
+    function updateOnlineState() {
+	$( "#btn-online" ).removeClass( [ "online", "offline", "live" ] );
+	if ( onlineState === false ) {
+            $( "#btn-online" ).addClass( "offline" );
+            $( "#btn-online-text" ).text( "Offline" );
+	} 
+	else {
+            if ( connectedState === false ) {
+		$( "#btn-online" ).addClass( "online" );
+		$( "span#btn-online-text" ).text( "Online" );
+            }
+            else {
+		$( "#btn-online" ).addClass( "live" );
+		$( "span#btn-online-text" ).text( "Live" );
+            }
+	}
+    }
+
+    $( "#btn-online" ).click(function() {
+	console.log( "online button click" );
+	connectedState = !connectedState;
+
+	if ( connectedState ) {
+	    console.log( "In connectedState" );
+
+            // swap in new appcache files 
+
+            // todo - when page first loads ...
+            // reconnected up to server - todo
+            // fetch all changes from server - todo 
+            // copy all offline changes up - todo 
+	}
+    });
+
+    function offlineInit() {
+	onlineState = navigator.onLine;
+
+	window.addEventListener("online", function() {
+            console.log( "Got online event" );
+            onlineState = true;
+            updateOnlineState();
+	} , false);
+	window.addEventListener("offline", function() {
+            console.log( "Got offline event" );
+            onlineState = false;
+            connectedState = false;
+            updateOnlineState();
+	} , false);
+
+	updateOnlineState();
+    }
+
+    /* UI code for style menus */ 
 
     $('#para-menu li a').click(function() {
 	var style, p, paras;
@@ -793,6 +850,8 @@ Fluffy.Edit = (function () {
 	
 	$( "#text-compose" ).focus();
 	
+	offlineInit();
+
 	webSocketInit();
 	
         modelLoad();

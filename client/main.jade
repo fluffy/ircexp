@@ -1,5 +1,5 @@
 doctype html
-html
+html(NO-manifest="main.appcache")
   head
     title Sink Test
     meta( name="viewport",content="width=device-width, initial-scale=1.0")
@@ -32,6 +32,10 @@ html
             li: a(href="#") Bold
             li: a(href="#") Italic
             li: a(href="#") MonoSpace
+       if false
+         button#btn-online.btn.btn-default
+           i.fa.fa-soundcloud 
+           span#btn-online-text Offline
     div#inner
      div#t2
       div#ridStart.para-Body

@@ -1,0 +1,19 @@
+CACHE MANIFEST
+# Version 1
+main.gen.html
+main.css
+main.js
+
+lib/bootstrap/dist/css/bootstrap.css
+lib/bootstrap/dist/js/bootstrap.js
+
+lib/jquery/dist/jquery.js
+lib/underscore/underscore.js
+
+lib/font-awesome/css/font-awesome.css
+lib/font-awesome/fonts/fontawesome-webfont.woff
+
+NETWORK:
+v1/*
+
+
