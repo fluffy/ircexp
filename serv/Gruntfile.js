@@ -192,9 +192,10 @@ module.exports = function(grunt) {
                            'secret.json', 
                            'nginx.gen-prod.conf',
                            'static/bundle<%= pkg.version %>/**',
+                           'static-dev/bundle<%= pkg.version %>/**',
                            'serv.js' ],
                     filter: 'isFile',
-                    dest: '/usr/local/sink',
+                    dest: '/usr/local/ircexp',
                     createDirectories: true
                 }]
             },
@@ -209,10 +210,11 @@ module.exports = function(grunt) {
                     src: [ 'package.json', 
                            'secret.json', 
                            'nginx.gen-test.conf',
+                           'static/bundle<%= pkg.version %>/**',
                            'static-dev/bundle<%= pkg.version %>/**',
                            'serv.js' ],
                     filter: 'isFile',
-                    dest: '/usr/local/sink-test',
+                    dest: '/usr/local/ircexp-test',
                     createDirectories: true
                 }]
             },
@@ -257,8 +259,8 @@ module.exports = function(grunt) {
 
         sshexec: {
             prod: {
-                command: ['sudo cp /usr/local/sink/nginx.gen-prod.conf /etc/nginx/sites-available/sink-prod.conf',
-                          '(cd /usr/local/sink; npm install) ',
+                command: ['sudo cp /usr/local/ircexp/nginx.gen-prod.conf /etc/nginx/sites-available/ircexp-prod.conf',
+                          '(cd /usr/local/ircexp; npm install) ',
                           'sudo forever restartall',
                           'sudo service nginx restart'
                          ],
@@ -269,8 +271,8 @@ module.exports = function(grunt) {
                 }
             },
             test: {
-                command: ['sudo cp /usr/local/sink-test/nginx.gen-test.conf /etc/nginx/sites-available/sink-test.conf',
-                          '(cd /usr/local/sink-test; npm install) ',
+                command: ['sudo cp /usr/local/ircexp-test/nginx.gen-test.conf /etc/nginx/sites-available/ircexp-test.conf',
+                          '(cd /usr/local/ircexp-test; npm install) ',
                           'sudo forever restartall',
                           'sudo service nginx restart'
                          ],

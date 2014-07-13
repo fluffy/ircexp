@@ -1,7 +1,7 @@
 {
   "name": "fluffy-test-server1",
   "description": "Fluffy Test Server 1",
-  "version": "0.0.1",
+  "version": "0.0.8",
   "private": true,
   "dependencies": {
     "express": ">=4.0",

@@ -8,7 +8,7 @@
 
 var devMode = ((process.env.NODE_ENV || 'prod' ) === 'prod' ) ? false : true ;
 if ( devMode ) {
-    console.log( "Warning: sink in dev mode. NODE_ENV=" + process.env.NODE_ENV );
+    console.log( "Warning: IRCExp in dev mode. NODE_ENV=" + process.env.NODE_ENV );
 }
 var config = require('./secret.json')[process.env.NODE_ENV || 'prod'];
 
@@ -66,7 +66,7 @@ fs.readFile(__dirname + "/" + "package.json", function (err, file) {
         console.log("Problem reading config package.json");
     }
     var config = JSON.parse( file );
-    console.log( "sink version:" + config.version );
+    console.log( "IRCExp version:" + config.version );
 
     bundleVersion = config.version;
 
